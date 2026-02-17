@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException, Body, status, Query
 from datetime import datetime, timezone
 from personal_finance_tracker_api.database import create_transaction, create_category
 from bson import ObjectId
+from pymongo.errors import DuplicateKeyError
 
 
 
@@ -146,7 +147,7 @@ async def monthly_report():
 
 @app.get("/transactions/{id}")
 async def get_transaction(transaction_id: str):
-    if not ObjectId.is_valid(id):
+    if not ObjectId.is_valid(transaction_id):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid ID format")
 
     try:
@@ -227,32 +228,83 @@ async def delete_transaction(transaction_id: str):
 
 
 # Category API
-@app.post("/categories")
+@app.post("/categories", status_code=status.HTTP_201_CREATED)
 async def create_category(c: Category):
     try:
         await category_col.insert_one(c.model_dump())
-        return {"message": "Created"}
-    except:
-        raise HTTPException(400, "Category already exists")
+        return {"message": "Category created successfully"}
 
+    except DuplicateKeyError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Category '{c.name}' already exists"
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error during creation"
+        )
 
 
 @app.get("/categories")
 async def list_categories():
-    cursor = category_col.find()
-    res = await cursor.to_list(length=100)
-    return [dict(doc, _id=str(doc["_id"])) for doc in res]
+    try:
+        cursor = category_col.find()
+        res = await cursor.to_list(length=100)
 
+        if not res:
+            return []
+
+        return [dict(doc, _id=str(doc["_id"])) for doc in res]
+
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve categories"
+        )
 
 
 @app.patch("/categories/{name}")
 async def update_category(name: str, c: Category):
-    await category_col.update_one({"name": name}, {"$set": c.model_dump()})
-    return {"status": "updated"}
+    try:
+        result = await category_col.update_one(
+            {"name": name},
+            {"$set": c.model_dump()}
+        )
 
+        if result.matched_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Category '{name}' not found"
+            )
+
+        return {"status": "updated", "category": c.name}
+
+    except DuplicateKeyError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Another category with this name already exists"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.delete("/categories/{name}")
 async def delete_category(name: str):
-    await category_col.delete_one({"name": name})
-    return {"status": "deleted"}
+    try:
+        result = await category_col.delete_one({"name": name})
+
+        if result.deleted_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Category '{name}' not found"
+            )
+
+        return {"status": "deleted", "message": f"Category '{name}' removed"}
+
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=500, detail="Delete operation failed")

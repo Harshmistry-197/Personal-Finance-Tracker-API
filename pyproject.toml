@@ -1,0 +1,15 @@
+[project]
+name = "personal finance tracker api"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Harshmistry-197",email = "harshmistry072004@gmail.com"}
+]
+requires-python = ">=3.13"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

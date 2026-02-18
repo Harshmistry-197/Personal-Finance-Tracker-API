@@ -39,7 +39,7 @@ class Category(BaseModel):
 
 
 # Transaction API
-@app.post("/transactions")
+@app.post("/transactions", tags=["Transaction API"])
 async def add_new_transaction(transaction: Transaction):
     try:
         transaction_data = transaction.model_dump()
@@ -51,7 +51,7 @@ async def add_new_transaction(transaction: Transaction):
 
 
 
-@app.get("/transactions")
+@app.get("/transactions", tags=["Transaction API"])
 async def list_transactions():
     try:
         data = transaction_col.find({})
@@ -73,7 +73,7 @@ async def list_transactions():
 
 
 
-@app.get("/transactions/search")
+@app.get("/transactions/search", tags=["Transaction API"])
 async def search_transactions(q: str):
         # # Requires text index on title/description
         # cursor = transaction_col.find({"$text": {"$search": q}})
@@ -120,7 +120,7 @@ async def search_transactions(q: str):
         )
 
 
-@app.get("/transactions/summary")
+@app.get("/transactions/summary", tags=["Transaction API"])
 async def monthly_report():
     try:
         pipeline = [
@@ -147,7 +147,7 @@ async def monthly_report():
         )
 
 
-@app.get("/transactions/{id}")
+@app.get("/transactions/{id}", tags=["Transaction API"])
 async def get_transaction(transaction_id: str):
     if not ObjectId.is_valid(transaction_id):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid ID format")
@@ -166,7 +166,7 @@ async def get_transaction(transaction_id: str):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
 
 
-@app.patch("/transactions/{id}")
+@app.patch("/transactions/{id}", tags=["Transaction API"])
 async def update_transaction(transaction_id:str, data: dict = Body(...)):
     if not ObjectId.is_valid(transaction_id):
         raise HTTPException(status_code=400, detail="Invalid ID format")
@@ -187,7 +187,7 @@ async def update_transaction(transaction_id:str, data: dict = Body(...)):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
 
 
-@app.delete("/transactions/bulk")
+@app.delete("/transactions/bulk", tags=["Transaction API"])
 async def bulk_delete(category: Optional[str] = Query(None, min_length=1)):
     try:
         if not category:
@@ -209,7 +209,7 @@ async def bulk_delete(category: Optional[str] = Query(None, min_length=1)):
         raise HTTPException(status_code=500, detail="Bulk delete operation failed")
 
 
-@app.delete("/transactions/{id}")
+@app.delete("/transactions/{id}", tags=["Transaction API"])
 async def delete_transaction(transaction_id: str):
     if not ObjectId.is_valid(id):
         raise HTTPException(status_code=400, detail="Invalid ID format")
@@ -230,7 +230,7 @@ async def delete_transaction(transaction_id: str):
 
 
 # Category API
-@app.post("/categories", status_code=status.HTTP_201_CREATED)
+@app.post("/categories", status_code=status.HTTP_201_CREATED, tags=["Category API"])
 async def create_category(c: Category):
     try:
         await category_col.insert_one(c.model_dump())
@@ -248,7 +248,7 @@ async def create_category(c: Category):
         )
 
 
-@app.get("/categories")
+@app.get("/categories", tags=["Category API"])
 async def list_categories():
     try:
         cursor = category_col.find()
@@ -266,7 +266,7 @@ async def list_categories():
         )
 
 
-@app.patch("/categories/{name}")
+@app.patch("/categories/{name}", tags=["Category API"])
 async def update_category(name: str, c: Category):
     try:
         result = await category_col.update_one(
@@ -293,7 +293,7 @@ async def update_category(name: str, c: Category):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.delete("/categories/{name}")
+@app.delete("/categories/{name}", tags=["Category API"])
 async def delete_category(name: str):
     try:
         result = await category_col.delete_one({"name": name})

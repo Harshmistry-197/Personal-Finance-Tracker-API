@@ -54,8 +54,8 @@ async def add_new_transaction(transaction: Transaction):
 @app.get("/transactions")
 async def list_transactions():
     try:
-        cursor = transaction_col.find({})
-        res = await cursor.to_list(length=100)
+        data = transaction_col.find({})
+        res = await data.to_list(length=100)
 
         if not res:
             raise HTTPException(status_code=404, detail="No transactions found")
@@ -106,7 +106,9 @@ async def search_transactions(q: str):
                 detail=f"No transactions found matching: {q}"
             )
 
-        return [dict(doc, _id=str(doc["_id"])) for doc in res]
+        for i in res:
+            i["_id"] = str(i["_id"])
+        return res
 
     except HTTPException:
         raise
@@ -133,7 +135,7 @@ async def monthly_report():
 
         res = await transaction_col.aggregate(pipeline).to_list(length=None)
         if not res:
-            return []
+            return "No records Found"
 
         return res
 
@@ -165,24 +167,24 @@ async def get_transaction(transaction_id: str):
 
 
 @app.patch("/transactions/{id}")
-async def update_transaction(transaction_id: str, data: dict = Body(...)):
-    if not ObjectId.is_valid(id):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid ID format")
+async def update_transaction(transaction_id:str, data: dict = Body(...)):
+    if not ObjectId.is_valid(transaction_id):
+        raise HTTPException(status_code=400, detail="Invalid ID format")
 
     if not data:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Update body cannot be empty")
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Data not found")
 
     try:
-        result = await transaction_col.update_one({"_id": ObjectId(transaction_id)}, {"$set": data})
-        if result.matched_count == 0:
+        res = await transaction_col.update_one({"_id": ObjectId(transaction_id)}, {"$set": data})
+        if res.matched_count == 0:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
 
-        return {"status": "updated", "updated_fields": list(data.keys())}
+        return {"status": "Updated", "Updated_fields": list(data.keys())}
 
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Update failed")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
 
 
 @app.delete("/transactions/bulk")

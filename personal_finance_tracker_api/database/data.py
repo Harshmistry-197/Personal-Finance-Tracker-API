@@ -12,10 +12,10 @@ connection = os.getenv("URL")
 
 def create_transaction():
     """
-        Initializes a connection to the 'transaction' collection in MongoDB.
-        - Uses AsyncIOMotorClient for non-blocking database operations.
-        - Connects to the 'Finance' database.
-        - Returns: Motor Collection object for transactions.
+    Initializes a connection to the 'transaction' collection in MongoDB.
+    - Uses AsyncIOMotorClient for non-blocking database operations.
+    - Connects to the 'Finance' database.
+    - Returns: Motor Collection object for transactions.
     """
     try:
         client = AsyncIOMotorClient(connection)
@@ -34,9 +34,9 @@ def create_transaction():
 
 def create_category():
     """
-        Initializes a connection to the 'category' collection in MongoDB.
-        - Uses AsyncIOMotorClient to maintain consistency with FastAPI's async nature.
-        - Returns: Motor Collection object for categories.
+    Initializes a connection to the 'category' collection in MongoDB.
+    - Uses AsyncIOMotorClient to maintain consistency with FastAPI's async nature.
+    - Returns: Motor Collection object for categories.
     """
     try:
         client = AsyncIOMotorClient(connection)

@@ -7,7 +7,6 @@ from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
 
 
-
 app = FastAPI()
 
 transaction_col = create_transaction()
@@ -267,11 +266,11 @@ async def list_categories():
 
 
 @app.patch("/categories/{name}", tags=["Category API"])
-async def update_category(name: str, c: Category):
+async def update_category(name: str, c: dict = Body(...)):
     try:
         result = await category_col.update_one(
             {"name": name},
-            {"$set": c.model_dump()}
+            {"$set": c}
         )
 
         if result.matched_count == 0:
@@ -280,7 +279,7 @@ async def update_category(name: str, c: Category):
                 detail=f"Category '{name}' not found"
             )
 
-        return {"status": "updated", "category": c.name}
+        return {"status": "updated", "category": list(c.keys())}
 
     except DuplicateKeyError:
         raise HTTPException(

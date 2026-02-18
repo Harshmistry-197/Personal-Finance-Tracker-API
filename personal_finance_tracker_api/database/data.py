@@ -10,8 +10,7 @@ connection = os.getenv("URL")
 def create_transaction():
     try:
         client = AsyncIOMotorClient(connection)
-        print("CLient Created")
-
+        print("Client Created")
 
         db = client["Finance"]
         print("database created")
@@ -27,7 +26,7 @@ def create_transaction():
 def create_category():
     try:
         client = AsyncIOMotorClient(connection)
-        print("CLient Created")
+        print("Client Created")
 
         db = client["Finance"]
         print("database created")

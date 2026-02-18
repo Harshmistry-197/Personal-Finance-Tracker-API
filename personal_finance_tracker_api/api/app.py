@@ -18,9 +18,9 @@ category_col = create_category()
 @app.post("/transactions", tags=["Transaction API"])
 async def add_new_transaction(transaction: Transaction):
     """
-        Create a new financial transaction.
-        - transaction: Validated Transaction data (Title, Amount, Type, etc.)
-        - Returns: The unique ID of the inserted transaction.
+    Create a new financial transaction.
+    - transaction: Validated Transaction data (Title, Amount, Type, etc.)
+    - Returns: The unique ID of the inserted transaction.
     """
     try:
         transaction_data = transaction.model_dump()
@@ -35,8 +35,8 @@ async def add_new_transaction(transaction: Transaction):
 @app.get("/transactions", tags=["Transaction API"])
 async def list_transactions():
     """
-        Fetch a list of the last 100 transactions.
-        - Returns: A list of transaction objects with stringified ObjectIDs.
+    Fetch a list of the last 100 transactions.
+    - Returns: A list of transaction objects with stringified ObjectIDs.
     """
     try:
         data = transaction_col.find({})
@@ -60,9 +60,9 @@ async def list_transactions():
 @app.get("/transactions/search", tags=["Transaction API"])
 async def search_transactions(q: str):
     """
-        Perform a case-insensitive search across transaction titles and descriptions.
-        - q: Search keyword (Query Parameter)
-        - Uses: MongoDB $regex for partial matching.
+    Perform a case-insensitive search across transaction titles and descriptions.
+    - q: Search keyword (Query Parameter)
+    - Uses: MongoDB $regex for partial matching.
     """
 
     try:
@@ -98,9 +98,9 @@ async def search_transactions(q: str):
 @app.get("/transactions/summary", tags=["Transaction API"])
 async def monthly_report():
     """
-       Generate a report of total income vs expenses grouped by month.
-       - Logic: Uses MongoDB Aggregation to sum amounts.
-       - Requirement: 'date' field must be a valid ISODate object.
+    Generate a report of total income vs expenses grouped by month.
+    - Logic: Uses MongoDB Aggregation to sum amounts.
+    - Requirement: 'date' field must be a valid ISODate object.
     """
     try:
         pipeline = [
@@ -130,7 +130,7 @@ async def monthly_report():
 @app.get("/transactions/{id}", tags=["Transaction API"])
 async def get_transaction(transaction_id: str):
     """
-        Retrieve a specific transaction by its unique hex ID.
+    Retrieve a specific transaction by its unique hex ID.
     """
     if not ObjectId.is_valid(transaction_id):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid ID format")
@@ -152,8 +152,8 @@ async def get_transaction(transaction_id: str):
 @app.patch("/transactions/{id}", tags=["Transaction API"])
 async def update_transaction(transaction_id:str, data: dict = Body(...)):
     """
-        Partially update an existing transaction.
-        - data: A dictionary of fields to change (e.g., {"category": "rent"}).
+    Partially update an existing transaction.
+    - data: A dictionary of fields to change (e.g., {"category": "rent"}).
     """
     if not ObjectId.is_valid(transaction_id):
         raise HTTPException(status_code=400, detail="Invalid ID format")
@@ -177,7 +177,7 @@ async def update_transaction(transaction_id:str, data: dict = Body(...)):
 @app.delete("/transactions/bulk", tags=["Transaction API"])
 async def bulk_delete(category: Optional[str] = Query(None, min_length=1)):
     """
-        Delete multiple transactions belonging to a specific category.
+    Delete multiple transactions belonging to a specific category.
     """
     try:
         if not category:
@@ -202,7 +202,7 @@ async def bulk_delete(category: Optional[str] = Query(None, min_length=1)):
 @app.delete("/transactions/{id}", tags=["Transaction API"])
 async def delete_transaction(transaction_id: str):
     """
-        Permanently remove a single transaction by ID.
+    Permanently remove a single transaction by ID.
     """
     if not ObjectId.is_valid(id):
         raise HTTPException(status_code=400, detail="Invalid ID format")
@@ -226,8 +226,8 @@ async def delete_transaction(transaction_id: str):
 @app.post("/categories", status_code=status.HTTP_201_CREATED, tags=["Category API"])
 async def create_category(c: Category):
     """
-       Register a new category for transaction sorting.
-       - Note: Requires a Unique Index on 'name' in MongoDB to trigger DuplicateKeyError.
+    Register a new category for transaction sorting.
+    - Note: Requires a Unique Index on 'name' in MongoDB to trigger DuplicateKeyError.
     """
     try:
         await category_col.insert_one(c.model_dump())
@@ -248,7 +248,7 @@ async def create_category(c: Category):
 @app.get("/categories", tags=["Category API"])
 async def list_categories():
     """
-        Retrieve all registered categories.
+    Retrieve all registered categories.
     """
     try:
         cursor = category_col.find()
@@ -269,7 +269,7 @@ async def list_categories():
 @app.patch("/categories/{name}", tags=["Category API"])
 async def update_category(name: str, c: dict = Body(...)):
     """
-        Update category details by name.
+    Update category details by name.
     """
     try:
         result = await category_col.update_one(
@@ -299,9 +299,9 @@ async def update_category(name: str, c: dict = Body(...)):
 @app.delete("/categories/{name}", tags=["Category API"])
 async def delete_category(name: str):
     """
-        Permanently delete a category by its name.
-        - name: The unique name of the category to be removed.
-        - Returns: A success message if deleted, or 404 if the name does not exist.
+    Permanently delete a category by its name.
+    - name: The unique name of the category to be removed.
+    - Returns: A success message if deleted, or 404 if the name does not exist.
     """
     try:
         result = await category_col.delete_one({"name": name})

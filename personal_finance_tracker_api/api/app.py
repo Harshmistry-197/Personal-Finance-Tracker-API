@@ -97,8 +97,8 @@ async def search_transactions(q: str):
                 {"description": {"$regex": q, "$options": "i"}}
             ]
         }
-        cursor = transaction_col.find(query)
-        res = await cursor.to_list(length=50)
+        data = transaction_col.find(query)
+        res = await data.to_list(length=50)
 
         if not res:
             raise HTTPException(

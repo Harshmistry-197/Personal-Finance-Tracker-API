@@ -5,8 +5,8 @@ from datetime import datetime, timezone
 
 def validate_past_date(v: datetime) -> datetime:
     """
-        Ensures the provided date is not set in the future.
-        Converts naive datetime objects to UTC aware objects for safe comparison.
+    Ensures the provided date is not set in the future.
+    Converts naive datetime objects to UTC aware objects for safe comparison.
     """
     if v.tzinfo is None:
         v = v.replace(tzinfo=timezone.utc)
@@ -17,7 +17,7 @@ def validate_past_date(v: datetime) -> datetime:
 
 class Transaction(BaseModel):
     """
-        Schema for financial transactions with strict validation rules.
+    Schema for financial transactions with strict validation rules.
     """
     title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=100)]
     description: StrictStr = Field(..., min_length=1)
@@ -32,7 +32,7 @@ class Transaction(BaseModel):
 
 class Category(BaseModel):
     """
-        Schema for grouping transactions into specific categories.
+    Schema for grouping transactions into specific categories.
     """
     name: StrictStr = Field(..., min_length=1, max_length=100)
     type: Literal["income", "expense", "both"]
